@@ -49,7 +49,7 @@ Loaded directly from the maintainers' canonical hosts at [nemelex.cards](https:/
 
 - [**OSP**](https://osp.nemelex.cards/) (Off-Screen Pack) — enabled by default
 - [**BindTheEarth**](https://sound-packs.nemelex.cards/Autofire/BindTheEarth/) — enabled by default
-- [**DCSS-UST**](https://sound-packs.nemelex.cards/DCSS-UST/) (Universal Sound Track, ~110 MB music) — commented out by default in `config/default-rc.txt`; uncomment to enable
+- [**DCSS-UST**](https://witchscadence.bandcamp.com/album/dungeon-crawl-stone-soup-ust) (Universal Sound Track, ~110 MB music) composed by **Cass Preston** — commented out by default in `config/default-rc.txt`; uncomment to enable. Please support the composer via his [Bandcamp](https://witchscadence.bandcamp.com/album/dungeon-crawl-stone-soup-ust).
 
 To add or change packs: edit the `sound_pack += ...` lines in `config/default-rc.txt`, then `./run.sh banner`. The DWEM client fetches them from whatever URL you put there.
 

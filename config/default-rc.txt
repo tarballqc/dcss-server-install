@@ -77,7 +77,9 @@
 # Full credit and thanks to the maintainers at nemelex.cards.
 #   - OSP            (Off-Screen Pack)        — https://osp.nemelex.cards/
 #   - BindTheEarth                            — https://sound-packs.nemelex.cards/Autofire/BindTheEarth/
-#   - DCSS-UST       (Universal Sound Track)  — https://sound-packs.nemelex.cards/DCSS-UST/
+#   - DCSS-UST       (Universal Sound Track)  — composed by Cass Preston;
+#                                                 official release: https://witchscadence.bandcamp.com/album/dungeon-crawl-stone-soup-ust
+#                                                 (zip mirror: https://sound-packs.nemelex.cards/DCSS-UST/)
 sound_on = true
 one_SDL_sound_channel = true
 sound_fade_time = 0.5

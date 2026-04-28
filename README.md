@@ -110,7 +110,9 @@ git clone --branch v1.0.7 https://github.com/tarballqc/dcss-server-install ~/dcs
 
 - The [Dungeon Crawl Stone Soup](https://crawl.develz.org/) team for the game.
 - [refracta](https://github.com/refracta/dcss-webtiles-extension-module) for the DWEM extension module.
-- [nemelex.cards](https://nemelex.cards) for the [OSP](https://osp.nemelex.cards/), [BindTheEarth](https://sound-packs.nemelex.cards/Autofire/BindTheEarth/), and [DCSS-UST](https://sound-packs.nemelex.cards/DCSS-UST/) soundpacks.
+- **Sound packs:**
+  - [**DCSS-UST**](https://witchscadence.bandcamp.com/album/dungeon-crawl-stone-soup-ust) (Universal Sound Track) composed by **Cass Preston** — official release on Bandcamp; please support the composer there.
+  - [**OSP**](https://osp.nemelex.cards/) (Off-Screen Pack) and [**BindTheEarth**](https://sound-packs.nemelex.cards/Autofire/BindTheEarth/) — community soundpacks hosted by [nemelex.cards](https://nemelex.cards).
 - [dgamelaunch](https://github.com/paxed/dgamelaunch) for the SSH game launcher.
 
 Built and maintained by [tarballqc](https://github.com/tarballqc) — admin of [crawl.roguelikes.gg](https://crawl.roguelikes.gg) (CRG) and [crawl-br.roguelikes.gg](https://crawl-br.roguelikes.gg) (CBRG).
