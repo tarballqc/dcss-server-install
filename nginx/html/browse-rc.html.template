@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RC Files — DCSS — __SERVER_ABBR__</title>
+<link rel="icon" href="/static/stone_soup_icon-32x32.png" type="image/png">
+<style>
+  body {
+    background: black;
+    color: white;
+    font-family: DejaVu Sans Mono, monospace;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 1.5rem 2rem;
+  }
+  a { color: white; text-decoration: underline; }
+  a:hover { color: lightgrey; }
+  h1 { font-size: 16px; font-weight: normal; margin: 0 0 0.3rem; }
+  .header { margin-bottom: 0.5rem; }
+  .nav { margin-bottom: 1rem; color: #888; }
+  .nav a { color: #888; margin-right: 0.5rem; }
+  .nav a:hover { color: white; }
+  .nav a.active { color: white; }
+  .nav .sep { color: #444; margin-right: 0.5rem; }
+  .breadcrumb { margin-bottom: 1rem; color: #888; }
+  .breadcrumb a { color: white; }
+  .file-list { list-style: none; padding: 0; }
+  .file-list li { border-bottom: 1px solid #222; }
+  .file-list a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .3rem 0;
+    text-decoration: none;
+    color: #aaa;
+  }
+  .file-list a:hover { color: #fff; }
+  .file-list .icon { color: #666; width: 20px; text-align: center; }
+  .file-list .name { flex: 1; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-list .date { color: #666; font-size: 14px; width: 180px; text-align: right; }
+  .file-list .size { color: #666; font-size: 14px; width: 80px; text-align: right; }
+  .empty, .loading { color: #666; padding: 2rem 0; }
+  .footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #222; color: #555; font-size: 14px; }
+  .footer a { color: #555; margin-right: 1.5rem; }
+  .footer a:hover { color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="header">
+Welcome to <b>__SERVER_ABBR__</b> (<a href="__SERVER_URL__">__SERVER_HOST__</a>) WebTiles!
+<br>Please read and follow the <a href="/code_of_conduct.txt">Code of Conduct</a> for this server.
+</div>
+
+<div class="nav">
+  <a href="/" id="nav-lobby">Back to Lobby</a><span class="sep">|</span><a href="/scores/" id="nav-scores">Scores</a><span class="sep">|</span><a href="/stats" id="nav-stats">Stats</a><span class="sep">|</span><a href="/scores/players/" id="nav-profile">Profile</a><span class="sep">|</span><a href="/morgue/" id="nav-morgue">Morgue</a><span class="sep">|</span><a href="/ttyrec/" id="nav-ttyrec">Recordings</a><span class="sep">|</span><a href="/rcfiles/crawl-0.34/" id="nav-rcfiles" class="active">RC Files</a>
+</div>
+<script>!function(){var u=null;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.endsWith("_user")){u=localStorage.getItem(k);break}}if(u){var p=document.getElementById("nav-profile");if(p)p.href="/scores/players/"+u+".html";var m=document.getElementById("nav-morgue");if(m)m.href="/morgue/"+u+"/";var t=document.getElementById("nav-ttyrec");if(t)t.href="/ttyrec/"+u+"/";var r=document.getElementById("nav-rcfiles");if(r)r.href="/rcfiles/crawl-0.34/"+u+".rc";}}()</script>
+
+<div class="breadcrumb" id="breadcrumb"></div>
+
+<div class="loading" id="loading">Loading...</div>
+<ul class="file-list" id="file-list" style="display:none"></ul>
+<div class="empty" id="empty" style="display:none">No RC files here yet.</div>
+
+
+<script>
+(function() {
+  var path = location.pathname;
+  var match = path.match(/\/rcfiles\/(crawl-[^/]+)\/?/);
+  var version = match ? match[1] : 'crawl-0.34';
+  var apiBase = '/rcfiles-json/' + version + '/';
+
+  var versions = ['crawl-0.34', 'crawl-git', 'crawl-0.33', 'crawl-0.32', 'crawl-0.31', 'crawl-0.30'];
+  var vlinks = versions.map(function(v) {
+    return v === version ? '<b>' + v + '</b>' : '<a href="/rcfiles/' + v + '/">' + v + '</a>';
+  }).join(' | ');
+  document.getElementById('breadcrumb').innerHTML = vlinks;
+
+  fetch(apiBase)
+    .then(function(r) { return r.json(); })
+    .then(function(entries) {
+      document.getElementById('loading').style.display = 'none';
+      if (!entries.length) {
+        document.getElementById('empty').style.display = 'block';
+        return;
+      }
+      var list = document.getElementById('file-list');
+      list.style.display = 'block';
+
+      entries.sort(function(a, b) {
+        return a.name.localeCompare(b.name);
+      });
+
+      entries.forEach(function(e) {
+        var li = document.createElement('li');
+        var href = '/rcfiles/' + version + '/' + e.name;
+        var date = e.mtime ? new Date(e.mtime).toLocaleString() : '';
+        var size = formatSize(e.size || 0);
+        li.innerHTML = '<a href="' + href + '"><span class="icon">&#128196;</span><span class="name">' + escapeHtml(e.name) + '</span><span class="date">' + date + '</span><span class="size">' + size + '</span></a>';
+        list.appendChild(li);
+      });
+    })
+    .catch(function() {
+      document.getElementById('loading').textContent = 'Failed to load RC file listing.';
+    });
+
+  function formatSize(bytes) {
+    if (bytes === 0) return '';
+    var units = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(i ? 1 : 0) + ' ' + units[i];
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+})();
+</script>
+</body>
+</html>

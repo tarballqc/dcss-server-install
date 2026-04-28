@@ -1,0 +1,21 @@
+Welcome to <b>__SERVER_ABBR__</b> (<a href="__SERVER_URL__">__SERVER_HOST__</a>) WebTiles! <span id="rgg-latency"></span>
+<br>Please read and follow the <a href="/code_of_conduct.txt">Code of Conduct</a> for this server.
+<br>SSH is available on port 222 with user 'crawl'. You must use the <a href="https://crawl.dcss.io/crawl/">CAO</a> key.
+<br>For account or server issues, contact __SERVER_ADMIN__ on Discord.
+<br>
+<link rel="stylesheet" href="/banner-stats.css">
+<div id="rgg-banner"></div>
+<br>
+<span id="rgg-nav"><a href="/scores/">Scores</a> &nbsp;&middot;&nbsp; <a href="/stats">Stats</a> &nbsp;&middot;&nbsp; <a href="https://crawl.develz.org/wordpress/">Crawl Blog</a> &nbsp;&middot;&nbsp; <a href="https://dcss.roguelikes.gg/wiki/">Wiki</a></span>
+{% if username %}
+<br>
+<br><span id="rgg-greeting">Hello</span>, {{ username }}! View your <a href="/scores/players/{{ username }}.html">profile</a> &middot; <a href="/morgue/{{ username }}/">morgues</a> &middot; <a href="/ttyrec/{{ username }}/">ttyrecs</a> &middot; <a href="/rcfiles/crawl-0.34/">rcfiles</a>.
+<script>!function(){var h=new Date().getHours(),g=h>=5&&h<12?"Good morning":h<17?"Good afternoon":h<22?"Good evening":"Still up";document.getElementById("rgg-greeting").textContent=g;var k=(window.RGG_SERVER&&window.RGG_SERVER.abbr||"srv").toLowerCase();localStorage.setItem(k+"_user","{{ username }}")}()</script>
+{% end %}
+<script>
+window.RGG_SERVER = {
+  abbr: '__SERVER_ABBR__',
+  url: '__SERVER_URL__'
+};
+</script>
+<script src="/banner-stats.js"></script>

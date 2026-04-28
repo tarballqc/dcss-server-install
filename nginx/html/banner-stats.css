@@ -1,0 +1,79 @@
+/* ── Banner cards ── */
+#rgg-banner { margin: 8px 0 6px; font-size: 0.92em; line-height: 1.6; width: 100%; position: relative; z-index: 1; }
+#rgg-banner .bn-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: stretch; margin-bottom: 6px; width: 100%; }
+#rgg-banner .bn-card {
+  flex: 1 1 0;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 4px;
+  padding: 6px 10px;
+  min-width: 200px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+#rgg-banner .bn-card-header {
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #aaa;
+  margin-bottom: 3px;
+}
+#rgg-banner .bn-win { border-left: 3px solid #5b5; }
+#rgg-banner .bn-death { border-left: 3px solid #d44; }
+#rgg-banner .bn-stats { border-left: 3px solid #dbb154; }
+#rgg-banner .bn-player { color: #dbb154; font-weight: bold; }
+#rgg-banner .bn-combo { color: #aaa; }
+#rgg-banner .bn-detail { color: #999; font-size: 0.88em; }
+#rgg-banner .bn-win-text { color: #6c6; }
+#rgg-banner .bn-death-text { color: #d66; font-size: 0.88em; }
+#rgg-banner .bn-stat-num { color: #dbb154; font-weight: bold; }
+#rgg-banner .bn-god { color: #b8a0d0; }
+#rgg-banner .bn-empty { color: #888; font-style: italic; font-size: 0.88em; }
+#rgg-banner .bn-morgue-link { font-size: 0.82em; }
+#rgg-banner .bn-motd { border-left: 3px solid #5fd7ff; }
+#rgg-banner .bn-motd-text { color: #5fd7ff; font-size: 0.88em; }
+#rgg-banner .bn-newest-name { color: #fff; font-weight: bold; }
+#rgg-banner a { color: #5fd7ff; }
+#rgg-banner a:hover { color: #fff; }
+
+/* ── Responsive cards: stack on narrow viewports ── */
+@media (max-width: 768px) {
+  #rgg-banner .bn-row { flex-direction: column; }
+  #rgg-banner .bn-card { min-width: 0; }
+}
+
+/* ── Latency indicators ── */
+#rgg-latency, #rgg-other-server { font-size: 0.85em; }
+.good { color: #5b5; }
+.ok { color: #dbb154; }
+.poor { color: #d44; }
+.offline { color: #888; }
+.rgg-this { color: #999; }
+.rgg-mid { color: #555; }
+.rgg-hop { color: #5fd7ff; text-decoration: none; }
+.rgg-hop:hover { color: #fff; text-decoration: underline; }
+.rgg-hop .good, .rgg-hop .ok, .rgg-hop .poor { font-weight: bold; }
+
+/* ── Nav links spacing ── */
+#rgg-nav { letter-spacing: 0.3px; }
+#rgg-nav a { padding: 0 2px; }
+
+/* ── Section separator between banner and play area ── */
+#play_now {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ── "Play now:" label ── */
+#play_now::first-line {
+  color: #ccc;
+}
+
+/* ── Account links: push to own line, right-aligned ── */
+#lobby .login_placeholder {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+#lobby .extra_links a { padding: 0 3px; }

@@ -1,0 +1,61 @@
+# Frozen DCSS versions (0.30-0.33) — built once per server, not during daily updates.
+# Usage: ./scripts/build-frozen.sh
+#
+# Each version is built as a separate --target and tagged locally.
+# The main Dockerfile.game references these tags via COPY --from.
+
+# ─── Base builder with common dependencies ───────────────────────────────────
+FROM ubuntu:24.04 AS builder-base
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git build-essential pkg-config binutils-gold \
+    libncurses-dev libsqlite3-dev libz-dev \
+    liblua5.1-0-dev libpng-dev \
+    python3-yaml python-is-python3 \
+    bison flex curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Build DCSS 0.30 ────────────────────────────────────────────────────────
+FROM builder-base AS builder-030
+
+RUN git clone --depth=100 --branch stone_soup-0.30 \
+    https://github.com/crawl/crawl.git /crawl \
+    && cd /crawl && git config core.abbrev 10 && git fetch --tags --depth=100 && git submodule update --init --depth=1
+
+WORKDIR /crawl/crawl-ref/source
+
+RUN make -j$(nproc) WEBTILES=y USE_DGAMELAUNCH=y WEBDIR=/crawl/crawl-ref/source/webserver/game_data
+
+# ─── Build DCSS 0.31 ────────────────────────────────────────────────────────
+FROM builder-base AS builder-031
+
+RUN git clone --depth=100 --branch stone_soup-0.31 \
+    https://github.com/crawl/crawl.git /crawl \
+    && cd /crawl && git config core.abbrev 10 && git fetch --tags --depth=100 && git submodule update --init --depth=1
+
+WORKDIR /crawl/crawl-ref/source
+
+RUN make -j$(nproc) WEBTILES=y USE_DGAMELAUNCH=y WEBDIR=/crawl/crawl-ref/source/webserver/game_data
+
+# ─── Build DCSS 0.32 ────────────────────────────────────────────────────────
+FROM builder-base AS builder-032
+
+RUN git clone --depth=100 --branch stone_soup-0.32 \
+    https://github.com/crawl/crawl.git /crawl \
+    && cd /crawl && git config core.abbrev 10 && git fetch --tags --depth=100 && git submodule update --init --depth=1
+
+WORKDIR /crawl/crawl-ref/source
+
+RUN make -j$(nproc) WEBTILES=y USE_DGAMELAUNCH=y WEBDIR=/crawl/crawl-ref/source/webserver/game_data
+
+# ─── Build DCSS 0.33 ────────────────────────────────────────────────────────
+FROM builder-base AS builder-033
+
+RUN git clone --depth=100 --branch stone_soup-0.33 \
+    https://github.com/crawl/crawl.git /crawl \
+    && cd /crawl && git config core.abbrev 10 && git fetch --tags --depth=100 && git submodule update --init --depth=1
+
+WORKDIR /crawl/crawl-ref/source
+
+RUN make -j$(nproc) WEBTILES=y USE_DGAMELAUNCH=y WEBDIR=/crawl/crawl-ref/source/webserver/game_data

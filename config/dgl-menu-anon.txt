@@ -1,0 +1,14 @@
+__SERVER_ABBR__ Crawl server (__SERVER_REGION_SHORT__) hosted and maintained by __SERVER_ADMIN__.
+----------------------------------------------------------------------
+Webtiles:           __SERVER_URL__/
+Crawl information:  https://crawl.develz.org/
+----------------------------------------------------------------------
+
+Not logged in.
+
+W) Watch games in progress
+
+R) Register as new user
+L) Login
+
+Q) Quit

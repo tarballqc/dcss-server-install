@@ -1,0 +1,118 @@
+name: dcss
+
+services:
+
+  # ── DCSS WebTiles game server ────────────────────────────────────────────
+  game:
+    build:
+      context: .
+      dockerfile: Dockerfile.game
+      args:
+        TRUNK_CACHE_BUST: ${TRUNK_CACHE_BUST:-0}
+        STABLE_CACHE_BUST: ${STABLE_CACHE_BUST:-0}
+        BUILD_OLDER_VERSIONS: ${BUILD_OLDER_VERSIONS:-0}
+    restart: unless-stopped
+    volumes:
+      - game-data:/data
+      - ./scripts:/app/scripts:ro
+    networks:
+      - internal
+    expose:
+      - "8080"                        # WebTiles, proxied by nginx
+    ports:
+      - "${SSH_PORT:-222}:22"         # SSH play (dgamelaunch)
+    environment:
+      # ── Server identity ──
+      - SERVER_ABBR=${SERVER_ABBR:-MYSRV}
+      - SERVER_URL=${SERVER_URL:-https://my-server.example.com}
+      - SERVER_REGION_SHORT=${SERVER_REGION_SHORT:-Your Region}
+      - SERVER_ADMIN=${SERVER_ADMIN:-}
+      # ── SMTP for password reset (leave blank to disable) ──
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_FROM=${SMTP_FROM:-DCSS WebTiles <admin@my-server.example.com>}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - NOTIFY_EMAIL=${NOTIFY_EMAIL:-}
+      - DISCORD_INVITE=${DISCORD_INVITE:-}
+      # ── Imported-account hint (only set if you imported users from elsewhere) ──
+      - IMPORT_SOURCE_NAME=${IMPORT_SOURCE_NAME:-}
+      - IMPORT_SOURCE_URL=${IMPORT_SOURCE_URL:-}
+      - IMPORT_DATE=${IMPORT_DATE:-}
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ── Leaderboard / scoring daemon ─────────────────────────────────────────
+  scoring:
+    build:
+      context: .
+      dockerfile: Dockerfile.scoring
+    restart: unless-stopped
+    volumes:
+      - game-data:/data:ro
+      - scoring-html:/scores
+    networks:
+      - internal
+    depends_on:
+      game:
+        condition: service_healthy
+    environment:
+      - LOGFILE=/data/saves/logfile
+      - MILESTONES=/data/saves/milestones
+      - MORGUE_URL=/morgue
+      - OUTPUT_DIR=/scores
+      - UPDATE_INTERVAL=60
+      - SERVER_ABBR=${SERVER_ABBR:-MYSRV}
+      - SERVER_URL=${SERVER_URL:-https://my-server.example.com}
+
+  # ── Nginx — public face (front it with host nginx + certbot for HTTPS) ──
+  web:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8880:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/html:/var/www/html:ro
+      - scoring-html:/var/www/scores:ro
+      - game-data:/var/www/morgue:ro
+    networks:
+      - internal
+    depends_on:
+      - game
+      - scoring
+
+  # ── Discord bot (opt-in via `--profile discord` or DISCORD_BOT_TOKEN set) ──
+  discord-bot:
+    profiles: ["discord"]
+    build:
+      context: .
+      dockerfile: discord-bot/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - game-data:/data
+    networks:
+      - internal
+    depends_on:
+      game:
+        condition: service_healthy
+    environment:
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
+      - DISCORD_CHANNEL_ID=${DISCORD_CHANNEL_ID:-}
+      - DISCORD_GUILD_ID=${DISCORD_GUILD_ID:-}
+      - DISCORD_INVITE=${DISCORD_INVITE:-}
+      - POLL_INTERVAL=5
+      - STATE_FILE=/data/discord-bot-state.json
+      - SERVER_URL=${SERVER_URL:-https://my-server.example.com}
+      - SERVER_NAME=${SERVER_ABBR:-MYSRV}
+      - SERVER_REGION=${SERVER_REGION:-}
+
+volumes:
+  game-data:
+  scoring-html:
+
+networks:
+  internal:

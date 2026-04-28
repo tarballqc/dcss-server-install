@@ -1,0 +1,228 @@
+templates:
+  - id: default
+    crawl_binary: /app/source/crawl
+    rcfile_path: /data/rcfiles
+    macro_path: /data/rcfiles
+    morgue_path: /data/morgue/%n
+    ttyrec_path: /data/ttyrec/%n
+    socket_path: /data/sockets
+    inprogress_path: /data/sockets/running
+    client_path: /app/source/webserver/game_data/
+    dir_path: /data/saves
+    morgue_url: /morgue/%n/
+    ttyrec_url: /ttyrec/%n/
+    rcfile_url: /rcfiles/crawl-%v/
+    show_save_info: True
+    allowed_with_hold: True
+
+  - id: stable
+    version: "0.34"
+
+  - id: trunk
+    crawl_binary: /app/source-trunk/crawl
+    client_path: /app/source-trunk/webserver/game_data/
+    dir_path: /data/saves-trunk
+    rcfile_path: /data/rcfiles-trunk
+    macro_path: /data/rcfiles-trunk
+    version: "trunk"
+
+  - id: v033
+    crawl_binary: /app/source-0.33/crawl
+    client_path: /app/source-0.33/webserver/game_data/
+    dir_path: /data/saves-0.33
+    rcfile_path: /data/rcfiles-0.33
+    macro_path: /data/rcfiles-0.33
+    version: "0.33"
+
+  - id: v032
+    crawl_binary: /app/source-0.32/crawl
+    client_path: /app/source-0.32/webserver/game_data/
+    dir_path: /data/saves-0.32
+    rcfile_path: /data/rcfiles-0.32
+    macro_path: /data/rcfiles-0.32
+    version: "0.32"
+
+  - id: v031
+    crawl_binary: /app/source-0.31/crawl
+    client_path: /app/source-0.31/webserver/game_data/
+    dir_path: /data/saves-0.31
+    rcfile_path: /data/rcfiles-0.31
+    macro_path: /data/rcfiles-0.31
+    version: "0.31"
+
+  - id: v030
+    crawl_binary: /app/source-0.30/crawl
+    client_path: /app/source-0.30/webserver/game_data/
+    dir_path: /data/saves-0.30
+    rcfile_path: /data/rcfiles-0.30
+    macro_path: /data/rcfiles-0.30
+    version: "0.30"
+
+games:
+  # ── Latest stable (0.34) ──────────────────────────────────────────────────
+  - id: dcss-0.34
+    template: stable
+    name: "DCSS %v"
+    separator: '<br><span style="display:inline-block;min-width:18ch;text-align:right;color:#888">latest version:&nbsp;&nbsp;</span>&nbsp;'
+
+  - id: tut-0.34
+    template: stable
+    name: "Tutorial"
+    options:
+      - -tutorial
+
+  - id: sprint-0.34
+    template: stable
+    name: "Sprint"
+    options:
+      - -sprint
+
+  - id: seeded-0.34
+    template: stable
+    name: "Seeded"
+    options:
+      - -seed
+
+  - id: descent-0.34
+    template: stable
+    name: "Descent"
+    options:
+      - -descent
+
+  # ── Trunk ─────────────────────────────────────────────────────────────────
+  - id: dcss-git
+    template: trunk
+    name: "DCSS %v"
+    separator: '<br><span style="display:inline-block;min-width:18ch;text-align:right;color:#888">trunk:&nbsp;&nbsp;</span>'
+
+  - id: tut-git
+    template: trunk
+    name: "Tutorial"
+    options:
+      - -tutorial
+
+  - id: sprint-git
+    template: trunk
+    name: "Sprint"
+    options:
+      - -sprint
+
+  - id: seeded-git
+    template: trunk
+    name: "Seeded"
+    options:
+      - -seed
+
+  - id: descent-git
+    template: trunk
+    name: "Descent"
+    options:
+      - -descent
+
+  # ── Older versions (collapsible via <details> injected through separator) ─
+  - id: dcss-0.33
+    template: v033
+    name: "DCSS %v"
+    separator: '</span><details class="old_versions" style="margin:4px 0" open><summary style="cursor:pointer;color:#5fd7ff;list-style:none;padding:2px 0">&#9662; Older versions</summary><span><br>'
+
+  - id: tut-0.33
+    template: v033
+    name: "Tutorial"
+    options:
+      - -tutorial
+
+  - id: sprint-0.33
+    template: v033
+    name: "Sprint"
+    options:
+      - -sprint
+
+  - id: seeded-0.33
+    template: v033
+    name: "Seeded"
+    options:
+      - -seed
+
+  - id: descent-0.33
+    template: v033
+    name: "Descent"
+    options:
+      - -descent
+
+  - id: dcss-0.32
+    template: v032
+    name: "DCSS %v"
+
+  - id: tut-0.32
+    template: v032
+    name: "Tutorial"
+    options:
+      - -tutorial
+
+  - id: sprint-0.32
+    template: v032
+    name: "Sprint"
+    options:
+      - -sprint
+
+  - id: seeded-0.32
+    template: v032
+    name: "Seeded"
+    options:
+      - -seed
+
+  - id: descent-0.32
+    template: v032
+    name: "Descent"
+    options:
+      - -descent
+
+  - id: dcss-0.31
+    template: v031
+    name: "DCSS %v"
+
+  - id: tut-0.31
+    template: v031
+    name: "Tutorial"
+    options:
+      - -tutorial
+
+  - id: sprint-0.31
+    template: v031
+    name: "Sprint"
+    options:
+      - -sprint
+
+  - id: seeded-0.31
+    template: v031
+    name: "Seeded"
+    options:
+      - -seed
+
+  - id: descent-0.31
+    template: v031
+    name: "Descent"
+    options:
+      - -descent
+
+  - id: dcss-0.30
+    template: v030
+    name: "DCSS %v"
+
+  - id: tut-0.30
+    template: v030
+    name: "Tutorial"
+    options:
+      - -tutorial
+
+  - id: sprint-0.30
+    template: v030
+    name: "Sprint"
+    options:
+      - -sprint
+
+  - id: seeded-0.30
+    template: v030
+    name: "Seeded"
+    options:
+      - -seed

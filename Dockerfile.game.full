@@ -1,0 +1,175 @@
+# ─── Base builder with common dependencies ───────────────────────────────────
+FROM ubuntu:24.04 AS builder-base
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git build-essential pkg-config binutils-gold \
+    libncurses-dev libsqlite3-dev libz-dev \
+    liblua5.1-0-dev libpng-dev \
+    python3-yaml python-is-python3 \
+    bison flex curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Build DCSS 0.34 (stable) ───────────────────────────────────────────────
+FROM builder-base AS builder-stable
+
+# Pass a new value to bust Docker cache and pull latest stable branch
+ARG STABLE_CACHE_BUST=0
+
+RUN git clone --depth=100 --branch stone_soup-0.34 \
+    https://github.com/crawl/crawl.git /crawl \
+    && cd /crawl && git config core.abbrev 10 && git fetch --tags --depth=100 && git submodule update --init --depth=1
+
+WORKDIR /crawl/crawl-ref/source
+
+RUN make -j$(nproc) WEBTILES=y USE_DGAMELAUNCH=y WEBDIR=/crawl/crawl-ref/source/webserver/game_data
+
+# ─── Build DCSS trunk (master) ──────────────────────────────────────────────
+FROM builder-base AS builder-trunk
+
+# Pass a new value to bust Docker cache and pull latest trunk
+ARG TRUNK_CACHE_BUST=0
+
+RUN git clone --depth=500 --branch master \
+    https://github.com/crawl/crawl.git /crawl \
+    && cd /crawl && git fetch --tags && git submodule update --init --depth=1
+
+WORKDIR /crawl/crawl-ref/source
+
+# No fake git describe for trunk — real version from git history + tags
+# Produces full version like "0.35-a0-201-ga177401964"
+
+RUN make -j$(nproc) WEBTILES=y USE_DGAMELAUNCH=y WEBDIR=/crawl/crawl-ref/source/webserver/game_data
+
+# ─── Runtime image ───────────────────────────────────────────────────────────
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-venv python3-pip \
+    libncursesw6 liblua5.1-0 libsqlite3-0 \
+    libpng16-16t64 \
+    locales curl ca-certificates libcrypt-dev \
+    openssh-server \
+    && locale-gen en_US.UTF-8 \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /run/sshd \
+    && useradd -m -s /bin/bash crawl \
+    && echo "crawl:joshua" | chpasswd \
+    && mkdir -p /home/crawl/.ssh \
+    && chmod 700 /home/crawl/.ssh \
+    && echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA2ztCchPiQL6kRFtk1Rqk/sk1ygnc0PbD6GP1CLOqu/+pD1DgslIo+TXXxJmX76ChKtk2RanvoSjQQM+igD5cctTXZhWvQrvpOxEucVN9WaE/tl4y8SYYQjov3X3Kr06AASkscSP9mcJp10lxGN+EyFASg7RyCaXOioDAFHZnLy6nkHKlNnWfY1ZEB0V2ujG19v9VVoGNJCmrut8lvThjewo7YG2utX6sqz5GaiUBrjvhWGV0er882ykekCrclMAKxjQcP1+1GZOoSgTuiK8kTtPj5mVQoshqas+R6xbp78p4Os9RB6cWvtp8AdkIJ1b8tGkPtasfRDUdcJ/v1CmZiQ== cao_key" > /home/crawl/.ssh/authorized_keys \
+    && chmod 600 /home/crawl/.ssh/authorized_keys \
+    && chown -R crawl:crawl /home/crawl/.ssh
+
+# ── Build dgamelaunch with SQLite support ─────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git build-essential libncurses-dev libsqlite3-dev autoconf automake flex bison libtool libfl-dev \
+    && git clone --depth=1 https://github.com/crawl/dgamelaunch.git /tmp/dgamelaunch \
+    && cd /tmp/dgamelaunch \
+    && autoreconf -fi 2>&1 \
+    && ./configure --with-config-file=/app/dgamelaunch.conf --enable-sqlite 2>&1 \
+    && make 2>&1 \
+    && cp dgamelaunch /usr/local/sbin/dgamelaunch \
+    && echo "/usr/local/sbin/dgamelaunch" >> /etc/shells \
+    && usermod -s /usr/local/sbin/dgamelaunch crawl \
+    && mkdir -p /dgldir \
+    && apt-get purge -y build-essential libncurses-dev libsqlite3-dev autoconf automake flex bison libtool libfl-dev \
+    && apt-get autoremove -y \
+    && rm -rf /tmp/dgamelaunch /var/lib/apt/lists/*
+
+# Copy frozen versions from pre-built local images (see scripts/build-frozen.sh)
+COPY --from=dcss-builder-030 /crawl/crawl-ref/source/crawl        /app/source-0.30/crawl
+COPY --from=dcss-builder-030 /crawl/crawl-ref/source/dat          /app/source-0.30/dat
+COPY --from=dcss-builder-030 /crawl/crawl-ref/source/webserver    /app/source-0.30/webserver
+COPY --from=dcss-builder-030 /crawl/crawl-ref/docs                /app/source-0.30/docs
+
+COPY --from=dcss-builder-031 /crawl/crawl-ref/source/crawl        /app/source-0.31/crawl
+COPY --from=dcss-builder-031 /crawl/crawl-ref/source/dat          /app/source-0.31/dat
+COPY --from=dcss-builder-031 /crawl/crawl-ref/source/webserver    /app/source-0.31/webserver
+COPY --from=dcss-builder-031 /crawl/crawl-ref/docs                /app/source-0.31/docs
+
+COPY --from=dcss-builder-032 /crawl/crawl-ref/source/crawl        /app/source-0.32/crawl
+COPY --from=dcss-builder-032 /crawl/crawl-ref/source/dat          /app/source-0.32/dat
+COPY --from=dcss-builder-032 /crawl/crawl-ref/source/webserver    /app/source-0.32/webserver
+COPY --from=dcss-builder-032 /crawl/crawl-ref/docs                /app/source-0.32/docs
+
+COPY --from=dcss-builder-033 /crawl/crawl-ref/source/crawl        /app/source-0.33/crawl
+COPY --from=dcss-builder-033 /crawl/crawl-ref/source/dat          /app/source-0.33/dat
+COPY --from=dcss-builder-033 /crawl/crawl-ref/source/webserver    /app/source-0.33/webserver
+COPY --from=dcss-builder-033 /crawl/crawl-ref/docs                /app/source-0.33/docs
+
+# Copy 0.34 (stable) binary + data + webserver — main version, server runs from here
+COPY --from=builder-stable /crawl/crawl-ref/source/crawl        /app/source/crawl
+COPY --from=builder-stable /crawl/crawl-ref/source/dat          /app/source/dat
+COPY --from=builder-stable /crawl/crawl-ref/source/webserver    /app/source/webserver
+COPY --from=builder-stable /crawl/crawl-ref/docs                /app/source/docs
+
+# Copy trunk binary + data + webserver to separate directory
+COPY --from=builder-trunk /crawl/crawl-ref/source/crawl        /app/source-trunk/crawl
+COPY --from=builder-trunk /crawl/crawl-ref/source/dat          /app/source-trunk/dat
+COPY --from=builder-trunk /crawl/crawl-ref/source/webserver    /app/source-trunk/webserver
+COPY --from=builder-trunk /crawl/crawl-ref/docs                /app/source-trunk/docs
+
+# Download RandomTiles.rc — players opt-in via "include += RandomTiles.rc" in their RC
+RUN curl -sL https://raw.githubusercontent.com/gammafunk/dcss-rc/master/RandomTiles.rc -o /tmp/RandomTiles.rc \
+    && for dir in /app/source/dat /app/source-trunk/dat /app/source-0.33/dat /app/source-0.32/dat /app/source-0.31/dat /app/source-0.30/dat; do \
+        cp /tmp/RandomTiles.rc "$dir/RandomTiles.rc"; \
+    done \
+    && rm /tmp/RandomTiles.rc
+
+# Install Python deps for WebTiles server
+RUN python3 -m venv /app/venv && \
+    /app/venv/bin/pip install --quiet --upgrade pip && \
+    if [ -f /app/source/webserver/requirements/base.py3.txt ]; then \
+        /app/venv/bin/pip install --quiet -r /app/source/webserver/requirements/base.py3.txt; \
+    else \
+        /app/venv/bin/pip install --quiet tornado pyyaml; \
+    fi && \
+    /app/venv/bin/pip install --quiet bcrypt
+
+# Inject our config — remove default games.d first to avoid conflicts
+COPY config/webtiles.py    /app/source/webserver/config.py
+RUN rm -rf /app/source/webserver/games.d/*
+COPY config/games.d/       /app/source/webserver/games.d/
+COPY config/init-player.sh /app/init-player.sh
+RUN chmod +x /app/init-player.sh
+COPY config/provision-user.py /app/provision-user.py
+COPY config/patch-sound.sh /app/patch-sound.sh
+RUN chmod +x /app/patch-sound.sh
+COPY config/dwem-inject.html /app/dwem-inject.html
+# Self-host entire DWEM extension so all imports are from localhost (no CDN latency)
+RUN curl -sL https://github.com/refracta/dcss-webtiles-extension-module/archive/refs/heads/main.tar.gz \
+    | tar xz -C /app/source/webserver/static/ \
+    && mv /app/source/webserver/static/dcss-webtiles-extension-module-main /app/source/webserver/static/dwem
+COPY config/default-rc.txt /app/default-rc.txt
+COPY config/webtiles-theme.css /app/webtiles-theme.css
+COPY config/banner.html       /app/source/webserver/templates/banner.html
+COPY config/lobby-versions.js /app/lobby-versions.js
+COPY config/patch-email-template.py /app/patch-email-template.py
+COPY config/patch-rehash.py /app/patch-rehash.py
+COPY config/dgamelaunch.conf /app/dgamelaunch.conf
+COPY config/dgl-banner.txt /app/dgl-banner.txt
+COPY config/dgl-menu-anon.txt /app/dgl-menu-anon.txt
+COPY config/dgl-menu-user.txt /app/dgl-menu-user.txt
+COPY config/dgl-menu-admin.txt /app/dgl-menu-admin.txt
+COPY config/dgl-play-034.txt /app/dgl-play-034.txt
+COPY config/dgl-play-trunk.txt /app/dgl-play-trunk.txt
+COPY config/dgl-play-033.txt /app/dgl-play-033.txt
+COPY config/dgl-play-032.txt /app/dgl-play-032.txt
+COPY config/dgl-play-031.txt /app/dgl-play-031.txt
+COPY config/dgl-play-030.txt /app/dgl-play-030.txt
+COPY config/startup.sh /app/startup.sh
+RUN chmod +x /app/startup.sh
+
+# Sound packs are loaded directly from upstream (nemelex.cards) by the DCSS
+# client — see config/default-rc.txt. No local hosting; full credit to the
+# original maintainers.
+
+EXPOSE 8080
+
+# Run from the source directory so the binary finds dat/ adjacent to it
+WORKDIR /app/source
+
+CMD ["/app/startup.sh"]

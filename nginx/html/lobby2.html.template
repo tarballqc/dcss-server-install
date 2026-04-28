@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>__SERVER_ABBR__ Lobby Preview</title>
+<style>
+  /* ── Base: match WebTiles terminal look ── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    color: #b0b0b0;
+    font-family: "DejaVu Sans Mono", "Courier New", monospace;
+    font-size: 16px;
+    line-height: 1.4;
+    padding: 10px;
+  }
+  a { color: #5fd7ff; text-decoration: underline; }
+  a:visited { color: #5fd7ff; }
+  a:hover { color: #fff; }
+
+  /* ── Header ── */
+  .lobby-header { margin-bottom: 4px; }
+  .lobby-header b { color: #fff; }
+  .lobby-header-sub { color: #888; font-size: 0.88em; }
+
+  /* ── Latency ── */
+  .bn-latency { font-size: 0.85em; }
+  .bn-latency.good { color: #5b5; }
+  .bn-latency.ok { color: #dbb154; }
+  .bn-latency.poor { color: #d44; }
+
+  /* ── Top-right login area ── */
+  .lobby-login {
+    float: right;
+    color: #b0b0b0;
+  }
+  .lobby-login a { color: #5fd7ff; }
+
+  /* ── Banner cards ── */
+  #rgg-banner { margin: 8px 0 6px; font-size: 0.92em; line-height: 1.6; width: 100%; }
+  #rgg-banner .bn-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: stretch; margin-bottom: 6px; width: 100%; }
+  #rgg-banner .bn-card {
+    flex: 1 1 0;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px;
+    padding: 6px 10px;
+    min-width: 200px;
+  }
+  #rgg-banner .bn-card-header {
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #888;
+    margin-bottom: 3px;
+  }
+  #rgg-banner .bn-win { border-left: 3px solid #5b5; }
+  #rgg-banner .bn-death { border-left: 3px solid #d44; }
+  #rgg-banner .bn-stats { border-left: 3px solid #dbb154; }
+  #rgg-banner .bn-player { color: #dbb154; font-weight: bold; }
+  #rgg-banner .bn-combo { color: #aaa; }
+  #rgg-banner .bn-detail { color: #999; font-size: 0.88em; }
+  #rgg-banner .bn-win-text { color: #6c6; }
+  #rgg-banner .bn-death-text { color: #d66; font-size: 0.88em; }
+  #rgg-banner .bn-stat-num { color: #dbb154; font-weight: bold; }
+  #rgg-banner .bn-god { color: #b8a0d0; }
+  #rgg-banner .bn-empty { color: #666; font-style: italic; font-size: 0.88em; }
+  #rgg-banner .bn-morgue-link { font-size: 0.82em; }
+  #rgg-banner .bn-motd { border-left: 3px solid #5fd7ff; }
+  #rgg-banner .bn-motd-text { color: #5fd7ff; font-size: 0.88em; }
+  #rgg-banner .bn-newest-name { color: #fff; font-weight: bold; }
+  #rgg-banner a { color: #5fd7ff; }
+  #rgg-banner a:hover { color: #fff; }
+
+  /* ── Nav links ── */
+  .lobby-nav { margin-top: 10px; color: #888; }
+  .lobby-nav a { color: #5fd7ff; }
+
+  /* ── Greeting ── */
+  .lobby-greeting { margin-top: 4px; }
+
+  /* ── Play section ── */
+  .lobby-play { margin-top: 8px; }
+  .lobby-play a { color: #5fd7ff; }
+  .lobby-play .version-label { color: #888; display: inline-block; width: 160px; text-align: right; margin-right: 8px; }
+  .lobby-play .older-toggle { color: #43A047; cursor: pointer; margin-top: 4px; }
+  .lobby-older { margin-top: 4px; display: none; }
+  .lobby-older.show { display: block; }
+
+  /* ── Game table ── */
+  .lobby-games { margin-top: 16px; }
+  .lobby-games-header { text-align: center; color: #b0b0b0; margin-bottom: 4px; }
+  .lobby-games table { border-collapse: collapse; width: 100%; font-size: 0.92em; }
+  .lobby-games th { color: #888; text-align: left; padding: 2px 8px 2px 0; border-bottom: 1px solid #333; }
+  .lobby-games td { padding: 2px 8px 2px 0; }
+  .lobby-games .col-user a { color: #5fd7ff; }
+  .lobby-games .col-game { color: #888; }
+  .lobby-games .col-char { color: #b0b0b0; text-align: right; padding-right: 12px; }
+  .lobby-games .col-place { color: #b0b0b0; }
+  .lobby-games .col-turn { color: #888; text-align: right; padding-right: 12px; }
+  .lobby-games .col-time { color: #888; }
+  .lobby-games .col-god { color: #b8a0d0; }
+  .lobby-games .col-idle { color: #888; }
+  .lobby-games .col-specs { color: #888; }
+  .lobby-games .col-milestone { color: #888; }
+</style>
+</head>
+<body>
+
+<!-- ── Login area (top right) ── -->
+<div class="lobby-login">
+  Logged in as exampleplayer | <a href="#">Change Email</a> <a href="#">Change Password</a> <a href="#">Logout</a>
+</div>
+
+<!-- ── Header ── -->
+<div class="lobby-header">
+  Welcome to <b>__SERVER_ABBR__</b> (<a href="__SERVER_URL__">__SERVER_HOST__</a>) WebTiles! <span class="bn-latency" id="rgg-latency"></span>
+  <div class="lobby-header-sub">
+    Please read and follow the <a href="/code_of_conduct.txt">Code of Conduct</a> for this server.
+    <br>SSH is available on port 222 with user 'crawl'. You must use the <a href="https://crawl.dcss.io/crawl/">CAO</a> key.
+    <br>For account or server issues, contact __SERVER_ADMIN__ on Discord.
+  </div>
+</div>
+
+<!-- ── Banner (dynamic cards) ── -->
+<div id="rgg-banner"></div>
+
+<!-- ── Nav ── -->
+<div class="lobby-nav">
+  <a href="/scores/">Scores</a> &middot; <a href="/stats">Stats</a> &middot; <a href="https://crawl.develz.org/wordpress/">Crawl Blog</a> &middot; <a href="https://dcss.roguelikes.gg/wiki/">Wiki</a>
+</div>
+
+<!-- ── Greeting ── -->
+<div class="lobby-greeting">
+  Good evening, exampleplayer! View your <a href="/scores/players/exampleplayer.html">profile</a> &middot; <a href="/morgue/exampleplayer/">morgues</a> &middot; <a href="/ttyrec/exampleplayer/">ttyrecs</a> &middot; <a href="/rcfiles/crawl-0.34/">rcfiles</a>.
+</div>
+
+<!-- ── Play now ── -->
+<div class="lobby-play">
+  Play now:
+  <div><span class="version-label">latest version:</span> <a href="#play-dcss-0.34">DCSS 0.34</a> (<a href="#">edit rc</a>) | <a href="#">Tutorial</a> | <a href="#">Sprint</a> | <a href="#">Seeded</a> | <a href="#">Descent</a></div>
+  <div><span class="version-label">trunk:</span> <a href="#play-dcss-git">DCSS trunk</a> (<a href="#">edit rc</a>) | <a href="#">Tutorial</a> | <a href="#">Sprint</a> | <a href="#">Seeded</a> | <a href="#">Descent</a></div>
+  <div class="older-toggle" id="older-toggle" onclick="document.getElementById('older-versions').classList.toggle('show'); this.textContent = this.textContent.includes('▼') ? '▲ Older versions' : '▼ Older versions'">▼ Older versions</div>
+  <div class="lobby-older" id="older-versions">
+    <a href="#">DCSS 0.33</a> (<a href="#">edit rc</a>) | <a href="#">Tutorial</a> | <a href="#">Sprint</a> | <a href="#">Seeded</a> | <a href="#">Descent</a>
+    <br><a href="#">DCSS 0.32</a> (<a href="#">edit rc</a>) | <a href="#">Tutorial</a> | <a href="#">Sprint</a> | <a href="#">Seeded</a> | <a href="#">Descent</a>
+    <br><a href="#">DCSS 0.31</a> (<a href="#">edit rc</a>) | <a href="#">Tutorial</a> | <a href="#">Sprint</a> | <a href="#">Seeded</a> | <a href="#">Descent</a>
+    <br><a href="#">DCSS 0.30</a> (<a href="#">edit rc</a>) | <a href="#">Tutorial</a> | <a href="#">Sprint</a> | <a href="#">Seeded</a>
+  </div>
+</div>
+
+<!-- ── Games currently running (static placeholder) ── -->
+<div class="lobby-games">
+  <div class="lobby-games-header">Games currently running:</div>
+  <table>
+    <tr>
+      <th>~User</th><th>Game</th><th style="text-align:right;padding-right:12px">XL Char</th><th>Place</th><th style="text-align:right;padding-right:12px">Turn</th><th>Time</th><th>God</th><th>Idle</th><th>Specs</th><th>Milestone</th>
+    </tr>
+    <tr>
+      <td class="col-user"><a href="#">maens</a></td>
+      <td class="col-game">dcss-0.34</td>
+      <td class="col-char">9 DECj</td>
+      <td class="col-place">D:7</td>
+      <td class="col-turn">6979</td>
+      <td class="col-time">1h 41m</td>
+      <td class="col-god">Sif Muna</td>
+      <td class="col-idle"></td>
+      <td class="col-specs"></td>
+      <td class="col-milestone">became a worshipper of Sif Muna.</td>
+    </tr>
+    <tr>
+      <td class="col-user"><a href="#">mattekudasai</a></td>
+      <td class="col-game">dcss-0.34</td>
+      <td class="col-char">6 GrEE</td>
+      <td class="col-place">D:4</td>
+      <td class="col-turn">3045</td>
+      <td class="col-time">5m</td>
+      <td class="col-god"></td>
+      <td class="col-idle"></td>
+      <td class="col-specs"></td>
+      <td class="col-milestone">killed Sigmund.</td>
+    </tr>
+    <tr>
+      <td class="col-user"><a href="#">PeaceFool</a></td>
+      <td class="col-game">dcss-0.34</td>
+      <td class="col-char">11 MiFi</td>
+      <td class="col-place">D:10</td>
+      <td class="col-turn">10285</td>
+      <td class="col-time">40m</td>
+      <td class="col-god">Ru</td>
+      <td class="col-idle"></td>
+      <td class="col-specs"></td>
+      <td class="col-milestone">killed Joseph.</td>
+    </tr>
+    <tr>
+      <td class="col-user"><a href="#">santiago</a></td>
+      <td class="col-game">dcss-0.34</td>
+      <td class="col-char">10 FeSu</td>
+      <td class="col-place">D:6</td>
+      <td class="col-turn">6589</td>
+      <td class="col-time">29m</td>
+      <td class="col-god">Kikubaaqudgha</td>
+      <td class="col-idle"></td>
+      <td class="col-specs"></td>
+      <td class="col-milestone">killed Edmund.</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ── Latency ping ── -->
+<script>
+function pingLatency() {
+  var t0 = performance.now();
+  fetch('/health', { cache: 'no-store' })
+    .then(function() {
+      var ms = Math.round(performance.now() - t0);
+      var el = document.getElementById('rgg-latency');
+      if (el) {
+        el.textContent = ms + 'ms';
+        el.className = 'bn-latency ' + (ms < 100 ? 'good' : ms < 200 ? 'ok' : 'poor');
+      }
+    })
+    .catch(function() {});
+}
+pingLatency();
+setInterval(pingLatency, 30000);
+</script>
+
+<!-- ── Banner rendering (fetches real data) ── -->
+<script>
+var banner = document.getElementById('rgg-banner');
+
+function esc(s) {
+  if (!s) return '';
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderBanner(d) {
+  var html = '<div class="bn-row">';
+
+  // ── Card 1: Latest Victory ──
+  html += '<div class="bn-card bn-win">';
+  html += '<div class="bn-card-header">[win] Latest Victory</div>';
+  if (d.latest_win) {
+    var w = d.latest_win;
+    var god = w.god ? ' of ' + esc(w.god) : '';
+    var runes = w.runes && w.runes !== '0' ? w.runes + ' runes' : '';
+    html += '<span class="bn-player">' + esc(w.name) + '</span> ';
+    html += '<span class="bn-win-text">ascended</span> ';
+    html += 'a L' + esc(w.xl) + ' ';
+    html += '<span class="bn-combo">' + esc(w.race) + ' ' + esc(w.cls) + '</span>';
+    html += '<span class="bn-god">' + esc(god) + '</span>';
+    html += '<br><span class="bn-detail">';
+    var details = [];
+    if (runes) details.push(runes);
+    if (w.dur && w.dur !== '?') details.push(w.dur);
+    if (w.score) details.push(w.score + ' pts');
+    if (w.version && w.version !== '?') details.push('v' + esc(w.version));
+    html += details.join(' \u00b7 ');
+    if (w.morgue_url) html += ' <a class="bn-morgue-link" href="' + esc(w.morgue_url) + '">[morgue]</a>';
+    html += '</span>';
+  } else {
+    html += '<span class="bn-empty">No victories yet \u2014 the Orb awaits its first champion.</span>';
+  }
+  html += '</div>';
+
+  // ── Card 2: Death of the Day ──
+  html += '<div class="bn-card bn-death">';
+  html += '<div class="bn-card-header">[rip] ' + esc(d.death_label || 'Death of the Day') + '</div>';
+  if (d.death_of_day) {
+    var dd = d.death_of_day;
+    var dgod = dd.god ? ' of ' + esc(dd.god) : '';
+    html += '<span class="bn-player">' + esc(dd.name) + '</span>';
+    html += ' (L' + esc(dd.xl) + ' ';
+    html += '<span class="bn-combo">' + esc(dd.race) + ' ' + esc(dd.cls) + '</span>';
+    html += '<span class="bn-god">' + esc(dgod) + '</span>)';
+    html += '<br>';
+    if (dd.tmsg) {
+      html += '<span class="bn-death-text">' + esc(dd.tmsg) + '</span>';
+    } else if (dd.killer) {
+      html += '<span class="bn-death-text">slain by ' + esc(dd.killer) + '</span>';
+    }
+    html += '<br><span class="bn-detail">';
+    var ddetails = [];
+    if (dd.place && dd.place !== '?') ddetails.push(esc(dd.place));
+    if (dd.score) ddetails.push(dd.score + ' pts');
+    if (dd.version && dd.version !== '?') ddetails.push('v' + esc(dd.version));
+    html += ddetails.join(' \u00b7 ');
+    if (dd.morgue_url) html += ' <a class="bn-morgue-link" href="' + esc(dd.morgue_url) + '">[morgue]</a>';
+    html += '</span>';
+  } else {
+    html += '<span class="bn-empty">No deaths recorded yet. The dungeon is quiet\u2026 for now.</span>';
+  }
+  html += '</div>';
+
+  html += '</div>'; // end row 1
+
+  // ── Row 2: Stats + MOTD ──
+  html += '<div class="bn-row">';
+
+  // ── Card 3: Server Activity ──
+  html += '<div class="bn-card bn-stats">';
+  html += '<div class="bn-card-header">[#] Server Activity</div>';
+  html += '<span class="bn-stat-num">' + (d.unique_players || 0).toLocaleString() + '</span> adventurers';
+  html += ' \u00b7 ';
+  html += '<span class="bn-stat-num">' + (d.total_games || 0).toLocaleString() + '</span> games played';
+  html += ' \u00b7 ';
+  html += '<span class="bn-stat-num">' + (d.total_wins || 0) + '</span> victories';
+  html += '<br><span class="bn-detail">';
+  html += 'Today: <span class="bn-stat-num">' + (d.games_today || 0) + '</span> games';
+  html += ' \u00b7 ';
+  html += 'This week: <span class="bn-stat-num">' + (d.games_this_week || 0) + '</span> games';
+  html += '</span>';
+  html += '</div>';
+
+  // ── Card 4: Message of the Day ──
+  if (d.motd) {
+    html += '<div class="bn-card bn-motd">';
+    html += '<div class="bn-card-header">[!] Message of the Day</div>';
+    html += '<span class="bn-motd-text">' + esc(d.motd) + '</span>';
+    if (d.newest_user) {
+      html += '<br><span class="bn-motd-text">Welcome our newest adventurer, <span class="bn-newest-name">' + esc(d.newest_user) + '</span>!</span>';
+    }
+    html += '</div>';
+  }
+
+  html += '</div>'; // end row 2
+
+  banner.innerHTML = html;
+}
+
+// Fetch real data
+banner.innerHTML = '<div class="bn-row" style="min-height:80px"><div class="bn-card" style="flex:1"><span style="color:#666">Loading...</span></div></div>';
+
+fetch('/scores/banner-stats.json', { cache: 'no-store' })
+  .then(function(r) { return r.ok ? r.json() : null; })
+  .then(function(data) { if (data) renderBanner(data); })
+  .catch(function() {
+    banner.innerHTML = '<div class="bn-row"><div class="bn-card" style="flex:1"><span class="bn-empty">Stats temporarily unavailable.</span></div></div>';
+  });
+
+setInterval(function() {
+  fetch('/scores/banner-stats.json', { cache: 'no-store' })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) { if (data) renderBanner(data); })
+    .catch(function() {});
+}, 60000);
+
+// Greeting time
+(function() {
+  var h = new Date().getHours();
+  var g = h >= 5 && h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : h < 22 ? 'Good evening' : 'Still up';
+  var el = document.querySelector('.lobby-greeting');
+  if (el) el.innerHTML = el.innerHTML.replace('Good evening', g);
+})();
+</script>
+
+</body>
+</html>

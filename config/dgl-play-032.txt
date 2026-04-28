@@ -1,0 +1,8 @@
+Logged in as: $USERNAME
+
+Game selected: Dungeon Crawl Stone Soup 0.32
+
+P)lay Crawl    D) Seeded     S)print    T)utorial
+E) Descent
+
+q) Return to main menu

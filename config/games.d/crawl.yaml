@@ -1,0 +1,97 @@
+templates:
+  - id: default
+    crawl_binary: /app/source/crawl
+    rcfile_path: /data/rcfiles
+    macro_path: /data/rcfiles
+    morgue_path: /data/morgue/%n
+    ttyrec_path: /data/ttyrec/%n
+    socket_path: /data/sockets
+    inprogress_path: /data/sockets/running
+    client_path: /app/source/webserver/game_data/
+    dir_path: /data/saves
+    morgue_url: /morgue/%n/
+    ttyrec_url: /ttyrec/%n/
+    rcfile_url: /rcfiles/crawl-%v/
+    show_save_info: True
+    allowed_with_hold: True
+
+  - id: stable
+    version: "0.34"
+
+  - id: trunk
+    crawl_binary: /app/source-trunk/crawl
+    client_path: /app/source-trunk/webserver/game_data/
+    dir_path: /data/saves-trunk
+    rcfile_path: /data/rcfiles-trunk
+    macro_path: /data/rcfiles-trunk
+    version: "trunk"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # To add older versions (0.30–0.33):
+  #   1. Run scripts/build-frozen.sh once on the host (~45 min).
+  #   2. Switch the build to Dockerfile.game.full (set DOCKERFILE_GAME=
+  #      Dockerfile.game.full in your .env and re-deploy with `game` mode).
+  #   3. Replace this file with config/games.d/crawl.yaml.full.
+  # See docs/upgrading.md for details.
+  # ─────────────────────────────────────────────────────────────────────────
+
+games:
+  # ── Latest stable (0.34) ──────────────────────────────────────────────────
+  - id: dcss-0.34
+    template: stable
+    name: "DCSS %v"
+    separator: '<br><span style="display:inline-block;min-width:18ch;text-align:right;color:#888">latest version:&nbsp;&nbsp;</span>&nbsp;'
+
+  - id: tut-0.34
+    template: stable
+    name: "Tutorial"
+    options:
+      - -tutorial
+
+  - id: sprint-0.34
+    template: stable
+    name: "Sprint"
+    options:
+      - -sprint
+
+  - id: seeded-0.34
+    template: stable
+    name: "Seeded"
+    options:
+      - -seed
+
+  - id: descent-0.34
+    template: stable
+    name: "Descent"
+    options:
+      - -descent
+
+  # ── Trunk ─────────────────────────────────────────────────────────────────
+  - id: dcss-git
+    template: trunk
+    name: "DCSS %v"
+    separator: '<br><span style="display:inline-block;min-width:18ch;text-align:right;color:#888">trunk:&nbsp;&nbsp;</span>'
+
+  - id: tut-git
+    template: trunk
+    name: "Tutorial"
+    options:
+      - -tutorial
+
+  - id: sprint-git
+    template: trunk
+    name: "Sprint"
+    options:
+      - -sprint
+
+  - id: seeded-git
+    template: trunk
+    name: "Seeded"
+    options:
+      - -seed
+
+  - id: descent-git
+    template: trunk
+    name: "Descent"
+    options:
+      - -descent
