@@ -91,6 +91,12 @@ case "$MODE" in
       fi
       echo "  Attempt $i/12: $STATUS"
     done
+    # Trim buildx cache after a successful build. Cache-bust args (set above)
+    # force a fresh upstream fetch every run, leaving multi-GB layers in the
+    # cache that nothing else collects. Keep 5 GB of recent layers so
+    # incremental no-bust rebuilds stay fast.
+    echo "Pruning old buildx cache (keeps 5 GB recent)..."
+    docker buildx prune -f --keep-storage=5gb 2>&1 | tail -1 || true
     ;;
   scoring)
     echo "Rebuilding scoring container..."
