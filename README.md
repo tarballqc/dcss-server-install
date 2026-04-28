@@ -6,6 +6,10 @@
 
 One-command installer for an unofficial **Dungeon Crawl Stone Soup** WebTiles + SSH server. Multi-version DCSS, sound, scoring, password-reset emails, optional Discord bot, and HTTPS via Let's Encrypt — provisioned by a single bootstrap script and a guided wizard.
 
+<p align="center">
+  <img src="docs/screenshots/installer.png" alt="DCSS Server Installer wizard" width="720">
+</p>
+
 ## Quick start
 
 On a fresh Linux box (Debian / Ubuntu / Amazon Linux 2023 / RHEL / Fedora) with sudo, ports 80 / 443 / 222 open, and DNS pointing to the server:
